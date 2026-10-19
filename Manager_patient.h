@@ -1,4 +1,3 @@
-
 #ifndef MANAGER_PATIENT_H
 #define MANAGER_PATIENT_H
 
@@ -22,15 +21,23 @@ private:
 
     string toLower(string str)
     {
-        transform(str.begin(), str.end(), str.begin(),
-                  [](unsigned char c)
-                  {
-                      return static_cast<char>(tolower(c));
-                  });
+        transform(
+            str.begin(),
+            str.end(),
+            str.begin(),
+            [](unsigned char c)
+            {
+                return static_cast<char>(tolower(c));
+            }
+        );
+
         return str;
     }
 
-    bool docSo(const string &thongbao, int &x)
+    bool docSo(
+        const string &thongbao,
+        int &x
+    )
     {
         string dong;
 
@@ -42,6 +49,7 @@ private:
                 return false;
 
             stringstream ss(dong);
+
             char kyTuThua;
 
             if ((ss >> x) && !(ss >> kyTuThua))
@@ -55,22 +63,17 @@ public:
     Patient *findByCCCD(const string &cccd)
     {
         for (size_t i = 0; i < patients.size(); i++)
+        {
             if (patients[i].getcccd() == cccd)
                 return &patients[i];
+        }
+
         return nullptr;
     }
 
     Patient *getPatientByCCCD(const string &cccd)
     {
-        for (size_t i = 0; i < patients.size(); i++)
-        {
-            if (patients[i].getcccd() == cccd)
-            {
-                return &patients[i];
-            }
-        }
-
-        return nullptr;
+        return findByCCCD(cccd);
     }
 
     void display()
@@ -80,6 +83,8 @@ public:
             cout << "Danh sach benh nhan rong!\n";
             return;
         }
+
+        cout << "\n================ DANH SACH BENH NHAN ================\n";
 
         for (size_t i = 0; i < patients.size(); i++)
         {
@@ -96,20 +101,25 @@ public:
         cout << "\n--- NHAP THONG TIN BENH NHAN MOI ---\n";
 
         Patient p;
+
         p.input();
 
-        for (Patient &item : patients)
+        if (findByCCCD(p.getcccd()) != nullptr)
         {
-            if (item.getcccd() == p.getcccd())
-            {
-                cout << "-> Loi: CCCD " << p.getcccd()
-                     << " da ton tai trong he thong!\n";
-                return;
-            }
+            cout << "-> Loi: CCCD "
+                 << p.getcccd()
+                 << " da ton tai trong he thong!\n";
+
+            cout << "Khong the them benh nhan.\n";
+
+            return;
         }
 
         patients.push_back(p);
+
         saveToFile(filePath);
+
+        cout << "-> Them benh nhan thanh cong!\n";
     }
 
     void readFile(ifstream &file)
@@ -130,6 +140,7 @@ public:
                 break;
 
             Patient patient;
+
             patient.readFile(file);
 
             if (file.fail())
@@ -138,9 +149,13 @@ public:
                 break;
             }
 
-            patients.push_back(patient);
+            if (!patient.getcccd().empty())
+            {
+                patients.push_back(patient);
+            }
 
             string dongTrong;
+
             getline(file, dongTrong);
         }
     }
@@ -172,7 +187,8 @@ public:
         file.close();
 
         cout << "-> Da dong bo du lieu vao file "
-             << filePath << " thanh cong!\n";
+             << filePath
+             << " thanh cong!\n";
     }
 
     void search_name()
@@ -184,19 +200,23 @@ public:
         if (!getline(cin, namesearch))
             return;
 
-        bool found = false;
         string key = toLower(namesearch);
+
+        bool found = false;
 
         for (size_t i = 0; i < patients.size(); i++)
         {
-            string currentName = toLower(patients[i].getname());
+            string currentName =
+                toLower(patients[i].getname());
 
             if (currentName.find(key) != string::npos)
             {
                 cout << "\n========== BENH NHAN "
-                     << i + 1 << " ==========\n";
+                     << i + 1
+                     << " ==========\n";
 
                 patients[i].display();
+
                 found = true;
             }
         }
@@ -217,23 +237,74 @@ public:
         if (!getline(cin, cccdsearch))
             return;
 
+        Patient *p = findByCCCD(cccdsearch);
+
+        if (p != nullptr)
+        {
+            cout << "\n========== THONG TIN BENH NHAN ==========\n";
+
+            p->display();
+
+            return;
+        }
+
+        cout << "Hien tai khong co thong tin benh nhan co "
+             << "CCCD la: "
+             << cccdsearch
+             << endl;
+    }
+
+    void deletePatient(const string &filePath)
+    {
+        string cccd;
+
+        cout << "Nhap CCCD benh nhan can xoa: ";
+
+        if (!getline(cin, cccd))
+            return;
+
         for (size_t i = 0; i < patients.size(); i++)
         {
-            if (patients[i].getcccd() == cccdsearch)
+            if (patients[i].getcccd() == cccd)
             {
-                cout << "\n========== BENH NHAN "
-                     << i + 1 << " ==========\n";
+                cout << "\nThong tin benh nhan se bi xoa:\n";
 
                 patients[i].display();
+
+                char choice;
+
+                cout << "\nBan co chac chan muon xoa? (y/n): ";
+                cin >> choice;
+
+                cin.ignore(
+                    numeric_limits<streamsize>::max(),
+                    '\n'
+                );
+
+                if (choice != 'y' && choice != 'Y')
+                {
+                    cout << "Da huy thao tac xoa.\n";
+                    return;
+                }
+
+                patients.erase(
+                    patients.begin() + i
+                );
+
+                saveToFile(filePath);
+
+                cout << "-> Da xoa benh nhan thanh cong!\n";
+
                 return;
             }
         }
 
-        cout << "Hien tai khong co thong tin benh nhan co "
-             << "CCCD la: " << cccdsearch << endl;
+        cout << "Khong tim thay benh nhan co CCCD: "
+             << cccd
+             << endl;
     }
 
-    void editPatient(string &filePath)
+    void editPatient(const string &filePath)
     {
         string cccdEdit;
 
@@ -248,181 +319,16 @@ public:
                 continue;
 
             Patient &p = patients[i];
+
             bool daSua = false;
 
-            int SO_MUC = 11; // so muc thong tin co the sua
+            const int SO_MUC = 11;
 
-            auto suaMuc = [&](int muc)
-            {
-                string s;
-                int a, b, c;
-
-                switch (muc)
-                {
-                case 1:
-                    cout << "Nhap ho ten moi: ";
-                    if (!getline(cin, s))
-                        return;
-
-                    p.setname(s);
-                    daSua = true;
-                    break;
-
-                case 2:
-                {
-                    cout << "Nhap CCCD moi: ";
-                    if (!getline(cin, s))
-                        return;
-
-                    bool trung = false;
-
-                    for (size_t j = 0; j < patients.size(); j++)
-                    {
-                        if (j != i && patients[j].getcccd() == s)
-                        {
-                            trung = true;
-                            break;
-                        }
-                    }
-
-                    if (trung)
-                    {
-                        cout << "CCCD nay da ton tai o benh nhan khac!\n";
-                    }
-                    else if (s.empty())
-                    {
-                        cout << "CCCD khong duoc de trong!\n";
-                    }
-                    else
-                    {
-                        p.setcccd(s);
-                        daSua = true;
-                    }
-
-                    break;
-                }
-
-                case 3:
-                    cout << "Nhap so dien thoai moi: ";
-                    if (!getline(cin, s))
-                        return;
-
-                    p.setnumber(s);
-                    daSua = true;
-                    break;
-
-                case 4:
-                    if (!docSo("Nhap gioi tinh moi (1 = Nu / 0 = Nam): ", a))
-                        return;
-
-                    while (a != 0 && a != 1)
-                    {
-                        if (!docSo("Vui long nhap 0 hoac 1: ", a))
-                            return;
-                    }
-
-                    p.setgender(a == 1);
-                    daSua = true;
-                    break;
-
-                case 5:
-                    if (!docSo("Nhap tuoi moi: ", a))
-                        return;
-
-                    while (!p.setage(a))
-                    {
-                        if (!docSo("Tuoi khong hop le! Nhap lai: ", a))
-                            return;
-                    }
-
-                    daSua = true;
-                    break;
-
-                case 6:
-                    cout << "Nhap so BHYT moi: ";
-                    if (!getline(cin, s))
-                        return;
-
-                    p.setso(s);
-                    daSua = true;
-                    break;
-
-                case 7:
-                    cout << "Nhap ngay mua BHYT moi\n";
-
-                    do
-                    {
-                        if (!docSo("Nhap ngay: ", a) ||
-                            !docSo("Nhap thang: ", b) ||
-                            !docSo("Nhap nam: ", c))
-                            return;
-
-                        if (p.setngaymua(a, b, c))
-                            break;
-
-                        cout << "Ngay khong hop le! Nhap lai.\n";
-                    } while (true);
-
-                    daSua = true;
-                    break;
-
-                case 8:
-                    cout << "Nhap bac si kham moi: ";
-                    if (!getline(cin, s))
-                        return;
-
-                    p.setbacsikham(s);
-                    daSua = true;
-                    break;
-
-                case 9:
-                    cout << "Nhap chuan doan moi: ";
-                    if (!getline(cin, s))
-                        return;
-
-                    p.setchuandoan(s);
-                    daSua = true;
-                    break;
-
-                case 10:
-                    cout << "Nhap so phong moi: ";
-                    if (!getline(cin, s))
-                        return;
-
-                    p.setsophong(s);
-                    daSua = true;
-                    break;
-
-                case 11:
-                    cout << "Nhap ngay kham moi\n";
-
-                    do
-                    {
-                        if (!docSo("Nhap ngay: ", a) ||
-                            !docSo("Nhap thang: ", b) ||
-                            !docSo("Nhap nam: ", c))
-                            return;
-
-                        if (p.setngaykham(a, b, c))
-                            break;
-
-                        cout << "Ngay khong hop le! Nhap lai.\n";
-                    } while (true);
-
-                    daSua = true;
-                    break;
-                }
-            };
-
-            cout << "-> Da tim thay benh nhan.\n";
-
-            int chon;
-
-            do
+            while (true)
             {
                 p.display();
 
-                cout << "\n\n===== CHON THONG TIN MUON SUA =====\n";
+                cout << "\n===== CHON THONG TIN MUON SUA =====\n";
                 cout << "1. Ho va ten\n";
                 cout << "2. CCCD\n";
                 cout << "3. So dien thoai\n";
@@ -437,28 +343,250 @@ public:
                 cout << "12. Tat ca thong tin\n";
                 cout << "0. Hoan tat\n";
 
-                if (!docSo("Lua chon cua ban: ", chon))
-                    return;
+                int chon;
 
-                if (chon >= 1 && chon <= SO_MUC)
+                if (!docSo(
+                        "Lua chon cua ban: ",
+                        chon))
                 {
-                    suaMuc(chon);
+                    return;
                 }
-                else if (chon == SO_MUC + 1)
+
+                if (chon == 0)
+                    break;
+
+                if (chon == 1)
                 {
-                    for (int muc = 1; muc <= SO_MUC; muc++)
-                        suaMuc(muc);
+                    string s;
+
+                    cout << "Nhap ho ten moi: ";
+                    getline(cin, s);
+
+                    if (!s.empty())
+                    {
+                        p.setname(s);
+                        daSua = true;
+                    }
                 }
-                else if (chon != 0)
+
+                else if (chon == 2)
+                {
+                    string s;
+
+                    cout << "Nhap CCCD moi: ";
+                    getline(cin, s);
+
+                    if (s.empty())
+                    {
+                        cout << "CCCD khong duoc de trong!\n";
+                    }
+                    else
+                    {
+                        bool trung = false;
+
+                        for (size_t j = 0;
+                             j < patients.size();
+                             j++)
+                        {
+                            if (j != i &&
+                                patients[j].getcccd() == s)
+                            {
+                                trung = true;
+                                break;
+                            }
+                        }
+
+                        if (trung)
+                        {
+                            cout << "CCCD nay da ton tai!\n";
+                        }
+                        else
+                        {
+                            p.setcccd(s);
+                            daSua = true;
+                        }
+                    }
+                }
+
+                else if (chon == 3)
+                {
+                    string s;
+
+                    cout << "Nhap so dien thoai moi: ";
+                    getline(cin, s);
+
+                    if (!s.empty())
+                    {
+                        p.setnumber(s);
+                        daSua = true;
+                    }
+                }
+
+                else if (chon == 4)
+                {
+                    int a;
+
+                    if (!docSo(
+                            "Nhap gioi tinh moi (1 = Nu / 0 = Nam): ",
+                            a))
+                    {
+                        return;
+                    }
+
+                    while (a != 0 && a != 1)
+                    {
+                        if (!docSo(
+                                "Vui long nhap 0 hoac 1: ",
+                                a))
+                        {
+                            return;
+                        }
+                    }
+
+                    p.setgender(a == 1);
+
+                    daSua = true;
+                }
+
+                else if (chon == 5)
+                {
+                    int a;
+
+                    if (!docSo(
+                            "Nhap tuoi moi: ",
+                            a))
+                    {
+                        return;
+                    }
+
+                    if (p.setage(a))
+                    {
+                        daSua = true;
+                    }
+                    else
+                    {
+                        cout << "Tuoi phai tu 1 den 120!\n";
+                    }
+                }
+
+                else if (chon == 6)
+                {
+                    string s;
+
+                    cout << "Nhap so BHYT moi: ";
+                    getline(cin, s);
+
+                    if (!s.empty())
+                    {
+                        p.setso(s);
+                        daSua = true;
+                    }
+                }
+
+                else if (chon == 7)
+                {
+                    int a, b, c;
+
+                    cout << "Nhap ngay mua BHYT moi:\n";
+
+                    if (!docSo("Nhap ngay: ", a) ||
+                        !docSo("Nhap thang: ", b) ||
+                        !docSo("Nhap nam: ", c))
+                    {
+                        return;
+                    }
+
+                    if (p.setngaymua(a, b, c))
+                    {
+                        daSua = true;
+                    }
+                    else
+                    {
+                        cout << "Ngay khong hop le!\n";
+                    }
+                }
+
+                else if (chon == 8)
+                {
+                    string s;
+
+                    cout << "Nhap bac si kham moi: ";
+                    getline(cin, s);
+
+                    if (!s.empty())
+                    {
+                        p.setbacsikham(s);
+                        daSua = true;
+                    }
+                }
+
+                else if (chon == 9)
+                {
+                    string s;
+
+                    cout << "Nhap chuan doan moi: ";
+                    getline(cin, s);
+
+                    if (!s.empty())
+                    {
+                        p.setchuandoan(s);
+                        daSua = true;
+                    }
+                }
+
+                else if (chon == 10)
+                {
+                    string s;
+
+                    cout << "Nhap so phong moi: ";
+                    getline(cin, s);
+
+                    if (!s.empty())
+                    {
+                        p.setsophong(s);
+                        daSua = true;
+                    }
+                }
+
+                else if (chon == 11)
+                {
+                    int a, b, c;
+
+                    cout << "Nhap ngay kham moi:\n";
+
+                    if (!docSo("Nhap ngay: ", a) ||
+                        !docSo("Nhap thang: ", b) ||
+                        !docSo("Nhap nam: ", c))
+                    {
+                        return;
+                    }
+
+                    if (p.setngaykham(a, b, c))
+                    {
+                        daSua = true;
+                    }
+                    else
+                    {
+                        cout << "Ngay khong hop le!\n";
+                    }
+                }
+
+                else if (chon == 12)
+                {
+                    cout << "\nDe sua toan bo thong tin, "
+                         << "ban co the chon tung muc tu 1 den 11.\n";
+                }
+
+                else
                 {
                     cout << "Lua chon khong hop le!\n";
                 }
-
-            } while (chon != 0);
+            }
 
             if (daSua)
             {
                 saveToFile(filePath);
+
                 cout << "-> Cap nhat thong tin thanh cong!\n";
             }
             else
@@ -470,7 +598,8 @@ public:
         }
 
         cout << "Khong tim thay benh nhan co CCCD: "
-             << cccdEdit << endl;
+             << cccdEdit
+             << endl;
     }
 };
 

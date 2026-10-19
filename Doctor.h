@@ -4,11 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits>
 
-#include "Manager_Medicine.h"
-#include "Manager_patient.h"
 #include "Person.h"
-
 
 using namespace std;
 
@@ -20,39 +18,23 @@ private:
     int soca;
 
 public:
-    // bool keThuoc(manager_patient &managerPatient,Manager_Thuoc &managerMedicine, const string &filePath)
-    // {
-    //     string cccd;
-
-    //     cout << "Nhap CCCD benh nhan can ke thuoc: ";
-    //     getline(cin, cccd);
-
-    //     Patient *bn = managerPatient.getPatientByCCCD(cccd);
-
-    //     if (bn == nullptr)
-    //     {
-    //         cout << "Khong tim thay benh nhan!\n";
-    //         return false;
-    //     }
-
-    //     cout << "\nThong tin benh nhan:\n";
-    //     cout << "Ho ten: " << bn->getname() << endl;
-    //     cout << "CCCD: " << bn->getcccd() << endl;
-
-    //     cout << "\nTien hanh ke thuoc!!!\n";
-
-    //     return managerMedicine.keThuoc(
-    //         bn->getthuoc(), filePath);
-    // }
-
     void change_in4()
     {
-        cin.ignore(1000, '\n');
         string s;
         int a;
 
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
         cout << "Nhap ho ten moi: ";
         getline(cin, s);
+
+        while (s.empty())
+        {
+            cout << "Ho ten khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            getline(cin, s);
+        }
+
         Person::setname(s);
 
         cout << "Nhap CCCD moi: ";
@@ -64,59 +46,101 @@ public:
         Person::setnumber(s);
 
         cout << "Nhap gioi tinh moi (1 = Nu / 0 = Nam): ";
-        cin >> a;
-        while (a != 0 && a != 1)
+
+        while (!(cin >> a) || (a != 0 && a != 1))
         {
             cout << "Vui long nhap 0 hoac 1: ";
-            cin >> a;
+
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
+
         Person::setgender(a == 1);
 
         cout << "Nhap tuoi moi: ";
-        cin >> a;
-        while (a < 1 || a > 120)
+
+        while (!(cin >> a) || a < 1 || a > 120)
         {
             cout << "Tuoi khong hop le, nhap lai: ";
-            cin >> a;
+
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
+
         Person::setage(a);
 
-        cin.ignore(1000, '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-        cout << "Chuyen chuyen nganh cua bac si thanh: ";
+        cout << "Chuyen nganh cua bac si thanh: ";
         getline(cin, chuyennganh);
 
-        cout << "Chuyen doi ID cua bac si thanh: ";
+        while (chuyennganh.empty())
+        {
+            cout << "Chuyen nganh khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            getline(cin, chuyennganh);
+        }
+
+        cout << "ID cua bac si thanh: ";
         getline(cin, id);
+
+        while (id.empty())
+        {
+            cout << "ID khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            getline(cin, id);
+        }
     }
+
     string getcccd()
     {
         return Person::getcccd();
     }
+
     void input()
     {
         Person::input();
 
         cout << "Nhap ID bac si: ";
         cin >> id;
-        cin.ignore();
+
+        while (id.empty())
+        {
+            cout << "ID khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            cin >> id;
+        }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         cout << "Nhap chuyen nganh: ";
         getline(cin, chuyennganh);
+
+        while (chuyennganh.empty())
+        {
+            cout << "Chuyen nganh khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            getline(cin, chuyennganh);
+        }
 
         cout << "Nhap so ca kham: ";
 
         while (!(cin >> soca) || soca < 0)
         {
             cout << "So ca khong hop le! Vui long nhap lai: ";
+
             cin.clear();
-            cin.ignore(1000, '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
+
     string getchuyennganh()
     {
         return chuyennganh;
     }
+
     int getSoca()
     {
         return soca;
@@ -130,7 +154,11 @@ public:
         getline(file, id);
 
         file >> soca;
-        file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        file.ignore(
+            numeric_limits<streamsize>::max(),
+            '\n'
+        );
     }
 
     void writeFile(ofstream &file)

@@ -5,13 +5,12 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <limits>
 
 #include "Person.h"
 #include "BHYT.h"
 #include "Date.h"
 #include "Medicine.h"
-#include "Manager_Medicine.h"
-#include "Doctor.h"
 
 using namespace std;
 
@@ -21,7 +20,9 @@ private:
     string bacsikham;
     string chuandoan;
     string sophong;
+
     Date date;
+
     vector<Thuoc> thuocBN;
 
 public:
@@ -29,10 +30,7 @@ public:
     {
         return Person::getname();
     }
-    vector<Thuoc>& getthuoc()
-    {
-        return thuocBN;
-    }
+
     string getcccd()
     {
         return Person::getcccd();
@@ -57,17 +55,25 @@ public:
     {
         return bacsikham;
     }
+
     string getchuandoan()
     {
         return chuandoan;
     }
+
     string getsophong()
     {
         return sophong;
     }
+
     Date getngaykham()
     {
         return date;
+    }
+
+    vector<Thuoc>& getthuoc()
+    {
+        return thuocBN;
     }
 
     void setname(string &s)
@@ -99,22 +105,25 @@ public:
     {
         bacsikham = bs;
     }
+
     void setchuandoan(string &cd)
     {
         chuandoan = cd;
     }
+
     void setsophong(string &sp)
     {
         sophong = sp;
     }
+
     bool setngaykham(int n, int t, int nm)
     {
         return date.setDate(n, t, nm);
     }
+
     void setthuoc(vector<Thuoc> thuoctemp)
     {
         thuocBN = thuoctemp;
-        return;
     }
 
     void input()
@@ -123,55 +132,100 @@ public:
 
         BHYT::input();
 
-        cin.ignore();
+        cin.ignore(
+            numeric_limits<streamsize>::max(),
+            '\n'
+        );
 
         cout << "Nhap bac si kham: ";
         getline(cin, bacsikham);
 
+        while (bacsikham.empty())
+        {
+            cout << "Bac si kham khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            getline(cin, bacsikham);
+        }
+
         cout << "Nhap chuan doan: ";
         getline(cin, chuandoan);
+
+        while (chuandoan.empty())
+        {
+            cout << "Chuan doan khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            getline(cin, chuandoan);
+        }
 
         cout << "Nhap so phong: ";
         getline(cin, sophong);
 
+        while (sophong.empty())
+        {
+            cout << "So phong khong duoc de trong!\n";
+            cout << "Nhap lai: ";
+            getline(cin, sophong);
+        }
+
         cout << "Nhap ngay kham: ";
         date.nhap();
 
-        
+        thuocBN.clear();
     }
 
     void display()
     {
+        cout << "\n========== THONG TIN BENH NHAN ==========\n";
+
         Person::display();
+
+        cout << endl;
+
         BHYT::display();
-        cout << endl;
-        cout << "Bac si kham: " << bacsikham << endl;
-        cout << "Chuan doan: " << chuandoan << endl;
-        cout << "So phong: " << sophong << endl;
+
+        cout << "Bac si kham: "
+             << bacsikham << endl;
+
+        cout << "Chuan doan: "
+             << chuandoan << endl;
+
+        cout << "So phong: "
+             << sophong << endl;
+
         cout << "Ngay kham: ";
+
         date.xuat();
+
         cout << endl;
-        
-        // --- Thêm phần hiển thị danh sách thuốc ở đây ---
-        cout << "Danh sach thuoc ke don (" << thuocBN.size() << "):" << endl;
+
+        cout << "Danh sach thuoc ke don ("
+             << thuocBN.size()
+             << "):"
+             << endl;
+
         if (thuocBN.empty())
         {
-            cout << "  (Khong co thuoc)" << endl;
+            cout << "  (Khong co thuoc)\n";
         }
         else
         {
             for (size_t i = 0; i < thuocBN.size(); i++)
             {
-                cout << "  --- Thuoc " << i + 1 << " ---" << endl;
-                thuocBN[i].display(); // Gọi hàm display của class Thuoc
+                cout << "\n  --- Thuoc "
+                     << i + 1
+                     << " ---\n";
+
+                thuocBN[i].display();
             }
         }
-        cout << "\n-----------------------------------------\n";
+
+        cout << "\n==========================================\n";
     }
 
     void readFile(ifstream &file)
     {
         Person::readFile(file);
+
         BHYT::readFile(file);
 
         getline(file, bacsikham);
@@ -180,15 +234,23 @@ public:
 
         date.readFile(file);
 
-        size_t n;
+        size_t n = 0;
+
         file >> n;
-        file.ignore(1000, '\n');
+
+        file.ignore(
+            numeric_limits<streamsize>::max(),
+            '\n'
+        );
 
         thuocBN.clear();
+
         for (size_t i = 0; i < n; i++)
         {
             Thuoc thuoc;
+
             thuoc.readFile(file);
+
             thuocBN.push_back(thuoc);
         }
     }
@@ -196,6 +258,7 @@ public:
     void writeFile(ofstream &file)
     {
         Person::writeFile(file);
+
         BHYT::writeFile(file);
 
         file << bacsikham << "\n";
@@ -205,6 +268,7 @@ public:
         date.writeFile(file);
 
         file << thuocBN.size() << "\n";
+
         for (size_t i = 0; i < thuocBN.size(); i++)
         {
             thuocBN[i].writeFile(file);

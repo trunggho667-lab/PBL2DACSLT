@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
 using namespace std;
 
 class Thuoc
@@ -93,25 +94,20 @@ public:
 
     void setdongia(double gia)
     {
-        while (gia < 0)
-        {
-            cout << "Don gia khong hop le, nhap lai: ";
-            cin >> gia;
-        }
+        if (gia < 0)
+            gia = 0;
 
         dongia = gia;
     }
 
     void setsoluong(int sl)
     {
-        while (sl < 0)
-        {
-            cout << "So luong khong hop le, nhap lai: ";
-            cin >> sl;
-        }
+        if (sl < 0)
+            sl = 0;
 
         soluong = sl;
     }
+
     void input()
     {
         string s;
@@ -134,15 +130,36 @@ public:
         getline(cin, s);
         setcongdung(s);
 
-        cout << "Nhap don gia: ";
-        cin >> gia;
-        setdongia(gia);
+        while (true)
+        {
+            cout << "Nhap don gia: ";
 
-        cout << "Nhap so luong ton kho: ";
-        cin >> sl;
-        setsoluong(sl);
+            if (cin >> gia && gia >= 0)
+                break;
+
+            cout << "Don gia khong hop le! Vui long nhap lai.\n";
+
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
+
+        while (true)
+        {
+            cout << "Nhap so luong ton kho: ";
+
+            if (cin >> sl && sl >= 0)
+                break;
+
+            cout << "So luong khong hop le! Vui long nhap lai.\n";
+
+            cin.clear();
+            cin.ignore(1000, '\n');
+        }
 
         cin.ignore(1000, '\n');
+
+        setdongia(gia);
+        setsoluong(sl);
     }
 
     void display()
@@ -167,7 +184,8 @@ public:
 
     void readFile(ifstream &file)
     {
-        string gia, sl;
+        string gia;
+        string sl;
 
         getline(file, mathuoc);
         getline(file, tenthuoc);
@@ -180,4 +198,5 @@ public:
         soluong = stoi(sl);
     }
 };
+
 #endif
